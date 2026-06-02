@@ -16,6 +16,7 @@ app.add_middleware(
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 BOT_TOKEN = os.environ.get("BOT_TOKEN", "")
 WEB_APP_URL = os.environ.get("WEB_APP_URL", "")
+WEBHOOK_URL = "https://avitobot-production.up.railway.app/webhook"
 
 @app.get("/", response_class=HTMLResponse)
 async def root():
@@ -46,36 +47,4 @@ async def generate(request: Request):
 @app.post("/webhook")
 async def webhook(request: Request):
     data = await request.json()
-    message = data.get("message", {})
-    chat_id = message.get("chat", {}).get("id")
-    text = message.get("text", "")
-    if not chat_id:
-        return {"ok": True}
-    if text in ["/start", "/open"]:
-        payload = {
-            "chat_id": chat_id,
-            "text": "Генератор объявлений для Авито 🔥\nНажми кнопку чтобы открыть:",
-            "reply_markup": {
-                "inline_keyboard": [[{
-                    "text": "Открыть генератор →",
-                    "web_app": {"url": WEB_APP_URL}
-                }]]
-            }
-        }
-        async with httpx.AsyncClient() as client:
-            await client.post(
-                f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
-                json=payload
-            )
-    return {"ok": True}
-
-@app.get("/set_webhook")
-async def set_webhook(request: Request):
-    host = str(request.base_url).rstrip("/")
-    webhook_url = f"{host}/webhook"
-    async with httpx.AsyncClient() as client:
-        r = await client.post(
-            f"https://api.telegram.org/bot{BOT_TOKEN}/setWebhook",
-            json={"url": webhook_url}
-        )
-        return r.json()
+    message = data.get("messag
